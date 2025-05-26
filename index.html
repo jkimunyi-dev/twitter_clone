@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitter Clone</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    
+    <header class="header">
+        <div class="header-content">
+            <h1 class="logo">Twitter Clone</h1>
+            <div class="search-container">
+                
+                <select class="user-select" id="userSelect">
+                    <option value="">Select User</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    
+    <div class="main-container">
+        
+        <div class="profile-section">
+            <div class="profile-banner"></div>
+            <div class="profile-info">
+                <div class="profile-avatar">
+                    <img src="images/profile.png" alt="Profile" class="avatar-img">
+                </div>
+                <div class="profile-details">
+                    <h2 class="profile-name" id="profileName">Chelsey Dietrich</h2>
+                    <p class="profile-username" id="profileUsername">@Kamren</p>
+                    <p class="profile-website" id="profileWebsite">demarco.info</p>
+                    <p class="profile-bio" id="profileBio">User-centric fault-tolerant solution</p>
+                    <div class="profile-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="profileLocation">Roscoeview</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="content-section">
+            
+            <div class="posts-section">
+                
+                <div class="posts-container" id="postsContainer">
+                    
+                </div>
+            </div>
+
+            
+            <div class="comments-section">
+                
+                <div class="comments-container" id="commentsContainer">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
