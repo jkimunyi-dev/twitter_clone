@@ -3,6 +3,7 @@ let users = [];
 let posts = [];
 let comments = [];
 let currentUser = null;
+let selectedPostId = null;
 const API_BASE = 'https://jsonplaceholder.typicode.com';
 const USERS_API = `${API_BASE}/users`;
 const POSTS_API = `${API_BASE}/posts`;
@@ -17,6 +18,7 @@ const postsContainer = document.getElementById('postsContainer');
 const commentsContainer = document.getElementById('commentsContainer');
 document.addEventListener('DOMContentLoaded', async () => {
     await loadUsers();
+    await loadAllComments(); // Load all comments once
     setupEventListeners();
     if (users.length > 0) {
         await loadUserData(users[0]);
@@ -48,6 +50,15 @@ async function loadUsers() {
         showError(commentsContainer, 'Failed to load users');
     }
 }
+async function loadAllComments() {
+    try {
+        const response = await fetch(COMMENTS_API);
+        comments = await response.json();
+    }
+    catch (error) {
+        console.error('Error loading comments:', error);
+    }
+}
 function populateUserSelect() {
     userSelect.innerHTML = '<option value="">Select User</option>';
     users.forEach(user => {
@@ -60,9 +71,10 @@ function populateUserSelect() {
 async function loadUserData(user) {
     currentUser = user;
     userSelect.value = user.id.toString();
+    selectedPostId = null; // Reset selected post
     updateProfile(user);
     await loadUserPosts(user.id);
-    await loadUserComments(user.id);
+    showInitialCommentsMessage();
 }
 function updateProfile(user) {
     profileName.textContent = user.name;
@@ -76,6 +88,7 @@ async function loadUserPosts(userId) {
         showLoading(postsContainer);
         const response = await fetch(`${POSTS_API}?userId=${userId}`);
         const userPosts = await response.json();
+        posts = userPosts; // Store posts for reference
         renderPosts(userPosts);
     }
     catch (error) {
@@ -83,17 +96,24 @@ async function loadUserPosts(userId) {
         showError(postsContainer, 'Failed to load posts');
     }
 }
-async function loadUserComments(userId) {
+function showInitialCommentsMessage() {
+    commentsContainer.innerHTML = '<div class="no-content">Click on a post to view its comments</div>';
+}
+function loadPostComments(postId) {
+    selectedPostId = postId;
     try {
         showLoading(commentsContainer);
-        const response = await fetch(COMMENTS_API);
-        const allComments = await response.json();
-        const userComments = allComments.filter(comment => comment.email.toLowerCase() === currentUser.email.toLowerCase());
-        const commentsToShow = userComments.length > 0 ? userComments : allComments.slice(0, 5);
-        renderComments(commentsToShow);
+        // Filter comments for the selected post
+        const postComments = comments.filter(comment => comment.postId === postId);
+        if (postComments.length > 0) {
+            renderComments(postComments);
+        }
+        else {
+            commentsContainer.innerHTML = '<div class="no-content">No comments available for this post</div>';
+        }
     }
     catch (error) {
-        console.error('Error loading comments:', error);
+        console.error('Error loading post comments:', error);
         showError(commentsContainer, 'Failed to load comments');
     }
 }
@@ -103,8 +123,8 @@ function renderPosts(posts) {
         return;
     }
     postsContainer.innerHTML = posts.map(post => `
-        <div class="post-card">
-            <img src="images/profile.jpg" alt="Profile" class="post-avatar">
+        <div class="post-card" data-post-id="${post.id}" style="cursor: pointer;">
+            <img src="images/profile.png" alt="Profile" class="post-avatar">
             <div class="post-content">
                 <div class="post-header">
                     <span class="post-name">${currentUser.name}</span>
@@ -116,7 +136,7 @@ function renderPosts(posts) {
                 <div class="post-actions">
                     <div class="action-item">
                         <i class="far fa-comment"></i>
-                        <span>200</span>
+                        <span>${comments.filter(c => c.postId === post.id).length}</span>
                     </div>
                     <div class="action-item">
                         <i class="fas fa-retweet"></i>
@@ -138,7 +158,7 @@ function renderComments(comments) {
     }
     commentsContainer.innerHTML = comments.map(comment => `
         <div class="comment-card">
-            <img src="images/profile.jpg" alt="Profile" class="comment-avatar">
+            <img src="images/profile.png" alt="Profile" class="comment-avatar">
             <div class="comment-content">
                 <div class="comment-header">
                     <span class="comment-name">${comment.name}</span>
@@ -174,8 +194,24 @@ function showError(container, message) {
 function addInteractivity() {
     document.addEventListener('click', (e) => {
         const target = e.target;
+        // Handle post clicks
+        const postCard = target.closest('.post-card');
+        if (postCard) {
+            const postId = parseInt(postCard.getAttribute('data-post-id') || '0');
+            if (postId) {
+                // Add visual feedback for selected post
+                document.querySelectorAll('.post-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                postCard.classList.add('selected');
+                loadPostComments(postId);
+                return; // Don't process action items if we clicked on the post
+            }
+        }
+        // Handle action item clicks (like, retweet, etc.)
         const actionElement = target.closest('.action-item') || target.closest('.comment-action');
         if (actionElement) {
+            e.stopPropagation(); // Prevent post click when clicking action items
             const countElement = actionElement.querySelector('span');
             let count = parseInt(countElement.textContent || '0');
             if (actionElement.classList.contains('active')) {
