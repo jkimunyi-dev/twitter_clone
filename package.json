@@ -1,0 +1,13 @@
+{
+  "name": "twitter_clone",
+  "version": "1.0.0",
+  "main": "script.js",
+  "scripts": {
+    "build" : "tsc",
+    "dev" : "pnpm node ./dist/script.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
